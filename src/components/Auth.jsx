@@ -8,8 +8,6 @@ export default function Auth() {
 
     async function AuthHandler(e) {
         e.preventDefault();
-        console.log(email);
-        console.log(password)
 
         try {
             if (isLogin) {
