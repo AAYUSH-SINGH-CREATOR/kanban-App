@@ -1,7 +1,31 @@
 import { useState } from 'react'
+import { supabase } from './supabase'
 
 export default function Auth() {
     const [isLogin, setIsLogin] = useState(true)
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    async function AuthHandler(e) {
+        e.preventDefault();
+        console.log(email);
+        console.log(password)
+
+        try {
+            if (isLogin) {
+                const { error } = await supabase.auth.signInWithPassword({ email, password })
+                if (error) throw error
+            }
+            else {
+                const { error } = await supabase.auth.signUp({ email, password })
+                if (error) throw error
+                alert('Check your email for the login link!')
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -11,7 +35,7 @@ export default function Auth() {
                     {isLogin ? 'Log In' : 'Sign Up'}
                 </h2>
 
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={AuthHandler}>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -22,6 +46,9 @@ export default function Auth() {
                             type="email"
                             required
                             className="mt-1 w-full rounded-md border border-gray-300 p-2"
+                            value={email}
+                            onChange={(e) => { setEmail(e.target.value) }}
+
                         />
                     </div>
 
@@ -34,6 +61,8 @@ export default function Auth() {
                             type="password"
                             required
                             className="mt-1 w-full rounded-md border border-gray-300 p-2"
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value) }}
                         />
                     </div>
 
