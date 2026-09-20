@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { supabase } from './supabase'
+import { IoEyeOutline } from "react-icons/io5";
+import { IoEyeOffOutline } from "react-icons/io5";
+
 
 export default function Auth() {
+    const [loading, setLoading] = useState(false)
     const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [showpass, setShowpass] = useState(false);
 
     async function AuthHandler(e) {
         e.preventDefault();
+        setLoading(true)
 
         try {
             if (isLogin) {
@@ -23,52 +29,58 @@ export default function Auth() {
         catch (error) {
             console.log(error)
         }
+
+        setLoading(false);
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100">
-            <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
+        <div className="flex min-h-screen items-center justify-center bg-zinc-700">
+            <div className="w-full max-w-md rounded-lg bg-zinc-900 p-8 shadow-md">
 
-                <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+                <h2 className="mb-6 text-center text-2xl font-bold text-gray-100">
                     {isLogin ? 'Log In' : 'Sign Up'}
                 </h2>
 
                 <form className="space-y-4" onSubmit={AuthHandler}>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-gray-100">
                             Email
                         </label>
 
                         <input
                             type="email"
                             required
-                            className="mt-1 w-full rounded-md border border-gray-300 p-2"
+                            className="mt-1 w-full text-white rounded-md border border-gray-300 p-2"
+                            placeholder='abc@gmail.com'
                             value={email}
                             onChange={(e) => { setEmail(e.target.value) }}
 
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
+                    <div className='relative'>
+                        <label className="block text-sm font-medium text-gray-100">
                             Password
                         </label>
-
                         <input
-                            type="password"
+                            type={showpass? "text" : "password"}
                             required
-                            className="mt-1 w-full rounded-md border border-gray-300 p-2"
+                            className="mt-1 w-full text-white rounded-md border border-gray-300 p-2"
+                            placeholder='password'
                             value={password}
                             onChange={(e) => { setPassword(e.target.value) }}
                         />
+                        <span onClick={()=> setShowpass((prev)=> !prev)} className='absolute text-white bottom-2.5 right-5 text-2xl'>
+                            {showpass? <IoEyeOffOutline/> : <IoEyeOutline/> }
+                        </span>
                     </div>
 
                     <button
                         type="submit"
                         className="w-full rounded-md bg-blue-600 p-2 text-white hover:bg-blue-700"
                     >
-                        {isLogin ? 'Log In' : 'Sign Up'}
+                {loading? 'processing' : isLogin ? 'Log In' : 'Sign Up'}
                     </button>
 
                 </form>
