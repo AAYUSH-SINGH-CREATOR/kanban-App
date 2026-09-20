@@ -51,7 +51,7 @@ export default function Auth() {
                         <input
                             type="email"
                             required
-                            className="mt-1 w-full text-white rounded-md border border-gray-300 p-2"
+                            className="mt-1 w-full text-white rounded-md border border-gray-300 p-2 bg-zinc-900"
                             placeholder='abc@gmail.com'
                             value={email}
                             onChange={(e) => { setEmail(e.target.value) }}
@@ -66,7 +66,7 @@ export default function Auth() {
                         <input
                             type={showpass? "text" : "password"}
                             required
-                            className="mt-1 w-full text-white rounded-md border border-gray-300 p-2"
+                            className="mt-1 w-full text-white rounded-md border border-gray-300 bg-zinc-900 p-2"
                             placeholder='password'
                             value={password}
                             onChange={(e) => { setPassword(e.target.value) }}

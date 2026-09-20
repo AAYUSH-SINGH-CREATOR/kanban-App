@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { supabase } from "./supabase";
+import { MdDone } from "react-icons/md";
+
 
 export default function Dashboard() {
     const [colm, setColm] = useState({
@@ -66,11 +68,39 @@ export default function Dashboard() {
         setDragItem(null);
     };
 
-    return (
-        <div className="flex h-screen w-screen flex-col items-center bg-zinc-900 pt-10">
-            <p className="mb-6 text-2xl font-bold text-amber-500">WELCOME TO KANBAN</p>
 
-            <div className="mb-8 flex w-full max-w-lg overflow-hidden rounded-lg shadow-lg">
+    const moveTaskToNext = (currentColmId, item) => {
+        const colKeys = Object.keys(colm);
+        const currentIndex = colKeys.indexOf(currentColmId);
+
+        if (currentIndex === colKeys.length - 1) return;
+
+        const targetColmId = colKeys[currentIndex + 1];
+
+        setColm(prev => ({
+            ...prev,
+            [currentColmId]: {
+                ...prev[currentColmId],
+                items: prev[currentColmId].items.filter(i => i.id !== item.id)
+            },
+            [targetColmId]: {
+                ...prev[targetColmId],
+                items: [...prev[targetColmId].items, item]
+            }
+        }));
+    };
+
+    return (
+        <div className="flex min-h-screen w-screen flex-col items-center bg-zinc-900 pt-2 pb-10 relative">
+            <button
+                onClick={() => supabase.auth.signOut()}
+                className="absolute right-1 top-1 rounded border border-blue-700 px-6 py-2 text-blue-500 transition hover:bg-blue-700 hover:text-white"
+            >
+                LOGOUT
+            </button>
+            <p className="mb-6 text-2xl font-bold text-amber-500 pt-10">WELCOME TO KANBAN</p>
+
+            <div className="mb-8 flex w-[90%] max-w-lg flex-col overflow-hidden rounded-lg shadow-lg sm:flex-row">
                 <input
                     type="text"
                     placeholder="Add a new task"
@@ -92,7 +122,7 @@ export default function Dashboard() {
                     Add
                 </button>
             </div>
-            <div className="flex w-full justify-center gap-8 px-6">
+            <div className="flex w-full flex-col sm:flex-row items-center sm:items-start justify-center gap-8 px-6 pb-10 bg-zinc-900">
                 {Object.entries(colm).map(([colmId, col]) => (
                     <div
                         key={colmId}
@@ -112,15 +142,23 @@ export default function Dashboard() {
                                         key={item.id}
                                         draggable
                                         onDragStart={() => setDragItem({ colmId, item })}
-                                        className="mb-3 flex cursor-grab items-center justify-between rounded-lg bg-zinc-700 p-4 text-white active:cursor-grabbing"
+                                        className="mb-3 flex items-center justify-between rounded-lg bg-zinc-700 p-4 text-white"
                                     >
                                         <span className="max-w-[85%] break-words">{item.content}</span>
-                                        <button
-                                            onClick={() => removeTask(colmId, item.id)}
-                                            className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-red-400"
-                                        >
-                                            ✕
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => moveTaskToNext(colmId, item)}
+                                                className="md:hidden flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-white"
+                                            >
+                                                <MdDone />
+                                            </button>
+                                            <button
+                                                onClick={() => removeTask(colmId, item.id)}
+                                                className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-red-400"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -129,12 +167,6 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            <button
-                onClick={() => supabase.auth.signOut()}
-                className="mt-8 rounded border border-blue-700 px-6 py-2 text-blue-500 transition hover:bg-blue-700 hover:text-white"
-            >
-                LOGOUT
-            </button>
         </div>
     );
 }

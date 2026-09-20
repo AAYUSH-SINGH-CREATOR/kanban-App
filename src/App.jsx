@@ -26,7 +26,7 @@ export default function App() {
 
 
   return (
-    <div>
+    <div className="bg-zinc-900 h-screen w-screen">
       <Routes>
         <Route path="/" element={session ? <Navigate to="/dashboard"/> : <Auth />} />
         <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/"/>} />
