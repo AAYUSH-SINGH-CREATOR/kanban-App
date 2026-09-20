@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
 import { MdDone } from "react-icons/md";
 
 
 export default function Dashboard() {
-    const [colm, setColm] = useState({
+    const defaultBoard = {
         todo: {
             name: "To Do",
             theme: "bg-blue-600 text-white",
@@ -20,11 +20,23 @@ export default function Dashboard() {
             theme: "bg-green-600 text-white",
             items: []
         }
-    });
+    };
 
     const [newTask, setNewTask] = useState("");
     const [activeClm, setActiveClm] = useState("todo");
     const [dragItem, setDragItem] = useState(null);
+    const [colm, setColm] = useState(()=>{
+        const savedBoard = localStorage.getItem("kanban-board");
+        if (savedBoard) {
+            return JSON.parse(savedBoard);
+        }
+        return defaultBoard;
+    })
+
+    useEffect(() => {
+        localStorage.setItem("kanban-board", JSON.stringify(colm));
+    }, [colm]);
+    
 
     const addNewTask = () => {
         if (!newTask.trim()) return;
@@ -148,7 +160,7 @@ export default function Dashboard() {
                                         <div className="flex items-center gap-1">
                                             <button
                                                 onClick={() => moveTaskToNext(colmId, item)}
-                                                className="md:hidden flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-white"
+                                                className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-green-500"
                                             >
                                                 <MdDone />
                                             </button>

@@ -7,6 +7,7 @@ import { supabase } from "./components/supabase"
 export default function App() {
 
   const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then((result) => {
@@ -19,6 +20,11 @@ export default function App() {
         setSession(session)
       }
     )
+
+    if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  }
+
     return () => {
       authListener.data.subscription.unsubscribe()
     }
