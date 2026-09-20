@@ -1,15 +1,140 @@
-import { supabase } from "./supabase"
+import { useState } from "react";
+import { supabase } from "./supabase";
 
 export default function Dashboard() {
+    const [colm, setColm] = useState({
+        todo: {
+            name: "To Do",
+            theme: "bg-blue-600 text-white",
+            items: []
+        },
+        pending: {
+            name: "Pending",
+            theme: "bg-amber-500 text-zinc-900",
+            items: []
+        },
+        complete: {
+            name: "Done",
+            theme: "bg-green-600 text-white",
+            items: []
+        }
+    });
 
-    async function logouthandler() {
-        await supabase.auth.signOut()
-    }
+    const [newTask, setNewTask] = useState("");
+    const [activeClm, setActiveClm] = useState("todo");
+    const [dragItem, setDragItem] = useState(null);
+
+    const addNewTask = () => {
+        if (!newTask.trim()) return;
+        setColm(prev => ({
+            ...prev,
+            [activeClm]: {
+                ...prev[activeClm],
+                items: [...prev[activeClm].items, { id: Date.now(), content: newTask }]
+            }
+        }));
+        setNewTask("");
+    };
+
+    const removeTask = (columnId, taskId) => {
+        setColm(prev => ({
+            ...prev,
+            [columnId]: {
+                ...prev[columnId],
+                items: prev[columnId].items.filter(i => i.id !== taskId)
+            }
+        }));
+    };
+
+    const handleDrop = (e, targetColmId) => {
+        e.preventDefault();
+        if (!dragItem || dragItem.colmId === targetColmId) return;
+
+        const { colmId: sourceColmId, item } = dragItem;
+
+        setColm(prev => ({
+            ...prev,
+            [sourceColmId]: {
+                ...prev[sourceColmId],
+                items: prev[sourceColmId].items.filter(i => i.id !== item.id)
+            },
+            [targetColmId]: {
+                ...prev[targetColmId],
+                items: [...prev[targetColmId].items, item]
+            }
+        }));
+        setDragItem(null);
+    };
 
     return (
-        <div className="flex justify-center items-center flex-col h-screen w-screen">
-            <p className="text-center text-4xl text-cyan-700">Welocome To Dashboard</p>
-            <button onClick={logouthandler} className="mt-8 border-1 border-blue-700">LOGOUT</button>
+        <div className="flex h-screen w-screen flex-col items-center bg-zinc-900 pt-10">
+            <p className="mb-6 text-2xl font-bold text-amber-500">WELCOME TO KANBAN</p>
+
+            <div className="mb-8 flex w-full max-w-lg overflow-hidden rounded-lg shadow-lg">
+                <input
+                    type="text"
+                    placeholder="Add a new task"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addNewTask()}
+                    className="flex-grow bg-zinc-700 p-3 text-white focus:outline-none"
+                />
+                <select
+                    value={activeClm}
+                    onChange={(e) => setActiveClm(e.target.value)}
+                    className="bg-zinc-600 p-3 text-white outline-none"
+                >
+                    {Object.entries(colm).map(([id, col]) => (
+                        <option value={id} key={id}>{col.name}</option>
+                    ))}
+                </select>
+                <button onClick={addNewTask} className="cursor-pointer bg-amber-500 px-6 font-medium text-white hover:bg-amber-600">
+                    Add
+                </button>
+            </div>
+            <div className="flex w-full justify-center gap-8 px-6">
+                {Object.entries(colm).map(([colmId, col]) => (
+                    <div
+                        key={colmId}
+                        className="flex h-[60vh] w-80 flex-col overflow-hidden rounded-lg bg-zinc-800"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, colmId)}
+                    >
+                        <div className={`p-4 text-xl font-bold tracking-wide ${col.theme} flex justify-between `}>
+                            <span>{col.name}</span><span className="ml-2 rounded-full bg-zinc-700 px-2 py-1 text-sm text-white">{col.items.length}</span>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-zinc-600">
+                            {col.items.length === 0 ? (
+                                <div className="py-10 text-center text-sm italic text-zinc-500">Drop tasks here</div>
+                            ) : (
+                                col.items.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        draggable
+                                        onDragStart={() => setDragItem({ colmId, item })}
+                                        className="mb-3 flex cursor-grab items-center justify-between rounded-lg bg-zinc-700 p-4 text-white active:cursor-grabbing"
+                                    >
+                                        <span className="max-w-[85%] break-words">{item.content}</span>
+                                        <button
+                                            onClick={() => removeTask(colmId, item.id)}
+                                            className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-600 hover:text-red-400"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={() => supabase.auth.signOut()}
+                className="mt-8 rounded border border-blue-700 px-6 py-2 text-blue-500 transition hover:bg-blue-700 hover:text-white"
+            >
+                LOGOUT
+            </button>
         </div>
-    )
+    );
 }
